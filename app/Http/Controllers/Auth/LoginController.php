@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
@@ -21,7 +20,14 @@ class LoginController extends Controller
             'password' => 'required'
         ]);
 
-        if (Auth::attempt($credentials)) {
+        // Try login as User
+        if (Auth::guard('web')->attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->route('dashboard');
+        }
+
+        // Try login as Subuser
+        if (Auth::guard('subusers')->attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->route('dashboard');
         }
@@ -33,7 +39,13 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        if (Auth::guard('web')->check()) {
+            Auth::guard('web')->logout();
+        }
+
+        if (Auth::guard('subusers')->check()) {
+            Auth::guard('subusers')->logout();
+        }
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

@@ -9,7 +9,6 @@
         @csrf
         @method('PUT')
 
-        {{-- Role Name --}}
         <div class="mb-3">
             <label>Name</label>
 
@@ -22,10 +21,7 @@
 
         </div>
 
-
-        {{-- Description --}}
         <div class="mb-3">
-
             <label>Description</label>
 
             <textarea
@@ -34,19 +30,20 @@
 
         </div>
 
-        {{-- Table Dropdown --}}
         <div class="mb-3">
+            <label>Select Tables</label>
 
-            <label>Select Table</label>
-
-            <select name="table_name" class="form-control">
-
-                <option value="">Select Table</option>
+            <select
+                name="table_names[]"
+                class="form-control"
+                multiple
+                size="6">
 
                 @foreach($tableNames as $table)
 
-                <option value="{{ $table }}"
-                    {{ $table == $tableName ? 'selected' : '' }}>
+                <option
+                    value="{{ $table }}"
+                    {{ in_array($table,$selectedTables ?? []) ? 'selected' : '' }}>
 
                     {{ $table }}
 
@@ -56,41 +53,44 @@
 
             </select>
 
-
         </div>
 
-
-        {{-- Permissions --}}
         <div class="mb-3">
             <label>Permissions</label>
 
             <div class="row">
+
                 @foreach($permissions as $permission)
 
                 <div class="col-md-3">
+
                     <div class="form-check">
 
                         <input
                             type="checkbox"
-                            class="form-check-input"
                             name="permissions[]"
                             value="{{ $permission->id }}"
+                            class="form-check-input"
                             id="perm{{ $permission->id }}"
-                            {{ in_array($permission->id, $rolePermissions ?? []) ? 'checked' : '' }}>
+                            {{ in_array($permission->id,$rolePermissions ?? []) ? 'checked' : '' }}>
 
                         <label
                             class="form-check-label"
                             for="perm{{ $permission->id }}">
+
                             {{ $permission->name }}
+
                         </label>
 
                     </div>
+
                 </div>
 
                 @endforeach
-            </div>
-        </div>
 
+            </div>
+
+        </div>
 
         <button type="submit" class="btn btn-primary">
             Update Role

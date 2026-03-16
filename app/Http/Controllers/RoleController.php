@@ -45,34 +45,38 @@ class RoleController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'table_name' => 'required|string',
-            'permissions' => 'nullable|array',
+            'table_names' => 'required|array',
+            'permissions' => 'required|array',
             'permissions.*' => 'exists:permissions,id',
         ]);
 
-        // Create role
-        $role = Role::create([
+        $role = \App\Models\Role::create([
             'name' => $request->name,
-            'description' => $request->description,
+            'description' => $request->description
         ]);
-
-        $permissionIds = $request->input('permissions', []);
 
         $syncData = [];
 
-        foreach ($permissionIds as $permissionId) {
-            $syncData[$permissionId] = [
-                'table_name' => $request->table_name
-            ];
+        foreach ($request->table_names as $table) {
+
+            foreach ($request->permissions as $permissionId) {
+
+                $syncData[] = [
+                    'role_id' => $role->id,
+                    'permission_id' => $permissionId,
+                    'table_name' => $table,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+            }
         }
 
-        // Save permissions with table name
-        $role->permissions()->sync($syncData);
+        \Illuminate\Support\Facades\DB::table('role_permission')->insert($syncData);
 
-        return redirect()
-            ->route('roles.index')
+        return redirect()->route('roles.index')
             ->with('success', 'Role created successfully');
     }
+
 
 
     /**
@@ -84,74 +88,84 @@ class RoleController extends Controller
         return view('roles.show', compact('role'));
     }
 
-    public function edit(string $id)
+    public function edit($id)
     {
-        $role = Role::findOrFail($id);
+        $role = \App\Models\Role::findOrFail($id);
 
-        $permissions = Permission::orderBy('name')->get();
+        $permissions = \App\Models\Permission::orderBy('name')->get();
 
-        // get database tables
-        $tableNames = DB::select('SHOW TABLES');
+        $tables = \Illuminate\Support\Facades\DB::select('SHOW TABLES');
 
-        $tableNames = collect($tableNames)->map(function ($table) {
+        $tableNames = collect($tables)->map(function ($table) {
             return array_values((array) $table)[0];
         });
 
-        // get selected table from pivot table
-        $tableName = $role->permissions()->first()->pivot->table_name ?? null;
+        $rolePermissions = $role->permissions->pluck('id')->toArray();
 
-        // get selected permission ids
-        $rolePermissions = $role->permissions()->pluck('permissions.id')->toArray();
+        $selectedTables = $role->permissions
+            ->pluck('pivot.table_name')
+            ->unique()
+            ->toArray();
 
         return view('roles.edit', compact(
             'role',
             'permissions',
             'tableNames',
-            'tableName',
-            'rolePermissions'
+            'rolePermissions',
+            'selectedTables'
         ));
     }
+
 
 
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'table_name' => 'required|string',
-            'permissions' => 'nullable|array',
+            'table_names' => 'required|array',
+            'permissions' => 'required|array',
             'permissions.*' => 'exists:permissions,id',
         ]);
 
-        $role = Role::findOrFail($id);
+        $role = \App\Models\Role::findOrFail($id);
 
-        // update role info
         $role->update([
             'name' => $request->name,
             'description' => $request->description
         ]);
 
-        $permissionIds = $request->permissions ?? [];
+        \Illuminate\Support\Facades\DB::table('role_permission')
+            ->where('role_id', $role->id)
+            ->delete();
 
-        $syncData = [];
+        $insertData = [];
 
-        foreach ($permissionIds as $permissionId) {
-            $syncData[$permissionId] = [
-                'table_name' => $request->table_name
-            ];
+        foreach ($request->table_names as $table) {
+
+            foreach ($request->permissions as $permissionId) {
+
+                $insertData[] = [
+                    'role_id' => $role->id,
+                    'permission_id' => $permissionId,
+                    'table_name' => $table,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+            }
         }
 
-        // update pivot
-        $role->permissions()->sync($syncData);
+        \Illuminate\Support\Facades\DB::table('role_permission')
+            ->insert($insertData);
 
-        return redirect()
-            ->route('roles.index')
+        return redirect()->route('roles.index')
             ->with('success', 'Role updated successfully');
     }
+
 
 
     /**

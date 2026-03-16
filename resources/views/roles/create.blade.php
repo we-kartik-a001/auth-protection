@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container">
+
     <h1>Create Role</h1>
 
     <form action="{{ route('roles.store') }}" method="POST">
@@ -9,54 +10,90 @@
 
         <div class="mb-3">
             <label>Name</label>
-            <input type="text" name="name" class="form-control" required>
+
+            <input
+                type="text"
+                name="name"
+                class="form-control"
+                required>
+
         </div>
 
         <div class="mb-3">
             <label>Description</label>
-            <textarea name="description" class="form-control"></textarea>
+
+            <textarea
+                name="description"
+                class="form-control"></textarea>
+
         </div>
 
-        {{-- Table Dropdown --}}
         <div class="mb-3">
-            <label>Select Table</label>
-            <select name="table_name" class="form-select" required>
-                <option value="">Select Table</option>
+            <label>Select Tables</label>
+
+            <select
+                name="table_names[]"
+                class="form-control"
+                multiple
+                size="6">
+
                 @foreach($tableNames as $table)
-                    <option value="{{ $table }}">{{ $table }}</option>
+
+                <option value="{{ $table }}">
+                    {{ $table }}
+                </option>
+
                 @endforeach
+
             </select>
+
         </div>
 
-        {{-- CRUD Operations --}}
         <div class="mb-3">
-
             <label>Permissions</label>
 
-            @foreach($permissions as $permission)
+            <div class="row">
 
-            <div class="form-check">
+                @foreach($permissions as $permission)
 
-                <input
-                type="checkbox"
-                name="permissions[]"
-                value="{{ $permission->id }}"
-                class="form-check-input">
+                <div class="col-md-3">
 
-                <label class="form-check-label">
-                {{ $permission->name }}
-                </label>
+                    <div class="form-check">
+
+                        <input
+                            type="checkbox"
+                            name="permissions[]"
+                            value="{{ $permission->id }}"
+                            class="form-check-input"
+                            id="perm{{ $permission->id }}">
+
+                        <label
+                            class="form-check-label"
+                            for="perm{{ $permission->id }}">
+
+                            {{ $permission->name }}
+
+                        </label>
+
+                    </div>
 
                 </div>
 
-            @endforeach
+                @endforeach
+
+            </div>
 
         </div>
 
+        <button type="submit" class="btn btn-primary">
+            Create Role
+        </button>
 
-        <button type="submit" class="btn btn-primary">Create Role</button>
-        <a href="{{ route('roles.index') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ route('roles.index') }}" class="btn btn-secondary">
+            Back
+        </a>
 
     </form>
+
 </div>
 @endsection

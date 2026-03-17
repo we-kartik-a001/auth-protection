@@ -4,7 +4,9 @@
 <div class="container">
     <h1>Posts</h1>
 
-    <a href="{{ route('posts.create') }}" class="btn btn-primary mb-3">Create New Post</a>
+    @can('create', App\Models\Post::class)
+        <a href="{{ route('posts.create') }}" class="btn btn-primary mb-3">Create New Post</a>
+    @endcan
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -19,14 +21,16 @@
                         <p class="card-text">{{ Str::limit($post->content, 100) }}</p>
                         <p class="text-muted">By: {{ $post->user->name }}</p>
                         <a href="{{ route('posts.show', $post->id) }}" class="btn btn-info">View</a>
-                        @if($post->user_id === Auth::id())
+                        @can('update', $post)
                             <a href="{{ route('posts.edit', $post->id) }}" class="btn btn-warning">Edit</a>
+                        @endcan
+                        @can('delete', $post)
                             <form action="{{ route('posts.destroy', $post->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this post?')">Delete</button>
                             </form>
-                        @endif
+                        @endcan
                     </div>
                 </div>
             </div>

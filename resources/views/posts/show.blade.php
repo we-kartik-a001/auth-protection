@@ -9,9 +9,9 @@
             <p class="card-text">{{ $post->content }}</p>
             <p class="text-muted">By: {{ $post->user->name }} on {{ $post->created_at->format('M d, Y') }}</p>
             <a href="{{ route('posts.index') }}" class="btn btn-secondary">Back</a>
-            @if($post->user_id === Auth::id())
+            @can('update', $post)
                 <a href="{{ route('posts.edit', $post->id) }}" class="btn btn-warning">Edit</a>
-            @endif
+            @endcan
         </div>
     </div>
 </div>

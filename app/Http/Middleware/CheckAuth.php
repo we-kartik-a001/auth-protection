@@ -16,7 +16,13 @@ class CheckAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::guard('web')->check() || Auth::guard('subusers')->check()) {
+        if (Auth::guard('web')->check()) {
+            Auth::shouldUse('web');
+            return $next($request);
+        }
+
+        if (Auth::guard('subusers')->check()) {
+            Auth::shouldUse('subusers');
             return $next($request);
         }
 

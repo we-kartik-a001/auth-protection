@@ -13,10 +13,11 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        Permission::create(['name' => 'Create Users', 'slug' => 'create-users']);
-        Permission::create(['name' => 'Edit Users', 'slug' => 'edit-users']);
-        Permission::create(['name' => 'Delete Users', 'slug' => 'delete-users']);
-        Permission::create(['name' => 'View Reports', 'slug' => 'view-reports']);
-        Permission::create(['name' => 'Manage Roles', 'slug' => 'manage-roles']);
+
+        // Generic CRUD actions — used by PostPolicy (slug + pivot table_name)
+        Permission::create(['name' => 'Read',   'slug' => 'read']);
+        Permission::create(['name' => 'Create', 'slug' => 'create']);
+        Permission::create(['name' => 'Update', 'slug' => 'update']);
+        Permission::create(['name' => 'Delete', 'slug' => 'delete']);
     }
 }
